@@ -43,6 +43,7 @@ import androidx.core.content.FileProvider;
 
 import com.xuexiang.xui.XUI;
 import com.xuexiang.xui.widget.actionbar.TitleBar;
+import com.xuexiang.xui.widget.button.switchbutton.SwitchButton;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -306,6 +307,23 @@ public class DetectionActivity extends AppCompatActivity
 //                showObjects(objects);
 //            }
 //        });
+
+        SwitchButton buttonMode = (SwitchButton) findViewById(R.id.buttonMode);
+        buttonMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                if (buttonMode.isChecked()) {
+                    Log.i("MODE","GPU");
+                    current_cpugpu = 1;
+                }
+                else
+                    current_cpugpu = 0;
+
+                String inform = "模式切换成功";
+                Toast toast=Toast.makeText(getApplicationContext(), inform, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
     }
 
     private void reload()
@@ -339,18 +357,21 @@ public class DetectionActivity extends AppCompatActivity
         customDialog.setsLeft(text, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (customDialog.getsLeft().equals("实施依据")){
-                    Log.e("CUSTOM","CHANGE");
-                    customDialog.setsMessage(messages.get(1));
-                    customDialog.setsLeft("返回");
-                } else if (customDialog.getsLeft().equals("返回")) {
-                    Log.e("CUSTOM","CHANGE back");
-                    customDialog.setsMessage(messages.get(0));
-                    Log.e("CUSTOM",messages.get(0));
-                    customDialog.setsLeft("实施依据");
-                }
-                else if (customDialog.getsLeft().equals("确定")) {
-                    customDialog.dismiss();
+                switch (customDialog.getsLeft()) {
+                    case "实施依据":
+                        Log.e("CUSTOM", "CHANGE");
+                        customDialog.setsMessage(messages.get(1));
+                        customDialog.setsLeft("返回");
+                        break;
+                    case "返回":
+                        Log.e("CUSTOM", "CHANGE back");
+                        customDialog.setsMessage(messages.get(0));
+                        Log.e("CUSTOM", messages.get(0));
+                        customDialog.setsLeft("实施依据");
+                        break;
+                    case "确定":
+                        customDialog.dismiss();
+                        break;
                 }
             }
         });
