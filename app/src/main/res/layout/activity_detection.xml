@@ -16,32 +16,6 @@
         app:tb_actionPadding="20dp"
         tools:tb_titleText="测试" />
 
-<!--        <TextView-->
-<!--            android:id="@+id/textScence"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="场景："-->
-<!--            android:textAlignment="viewStart"-->
-<!--            android:textColor="#000000"-->
-<!--            android:textStyle="bold"-->
-<!--            android:layout_weight="1"/>-->
-
-<!--        <Spinner-->
-<!--            android:id="@+id/spinnerModel"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:drawSelectorOnTop="true"-->
-<!--            android:entries="@array/model_array"-->
-<!--            android:layout_weight="1"/>-->
-
-<!--        <Spinner-->
-<!--            android:id="@+id/spinnerSecondModel"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:drawSelectorOnTop="true"-->
-<!--            android:entries="@array/model_array"-->
-<!--            android:layout_weight="1"/>-->
-
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -71,13 +45,6 @@
             android:text="识别"
             android:layout_weight="1"/>
 
-        <!--        <Button-->
-        <!--            android:id="@+id/buttonDetectGPU"-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:text="识别-gpu"-->
-        <!--            android:visibility="1" />-->
-
     </LinearLayout>
 
     <LinearLayout
@@ -94,14 +61,6 @@
             android:textColor="#000000"
             android:textStyle="bold" />
 
-<!--        <Spinner-->
-<!--            android:id="@+id/spinnerCPUGPU"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:drawSelectorOnTop="true"-->
-<!--            android:entries="@array/cpugpu_array"-->
-<!--            android:layout_weight="1"/>-->
-
         <com.xuexiang.xui.widget.button.switchbutton.SwitchButton
             android:id="@+id/buttonMode"
             android:layout_width="wrap_content"
@@ -115,36 +74,31 @@
 
     </LinearLayout>
 
-
-
     <LinearLayout
         android:id="@+id/imageLayout"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
+        android:gravity="center"
         android:layout_height="0dp"
         android:layout_weight="3"
         android:background="@mipmap/sanxia">
-
-<!--        <ImageView-->
-<!--            android:id="@+id/imageView"-->
-<!--            android:layout_width="fill_parent"-->
-<!--            android:layout_height="480dp"-->
-<!--            android:alpha="0.8"-->
-<!--            android:scaleType="centerInside"-->
-<!--            android:src="@mipmap/sanxia"-->
-<!--            android:visibility="visible" />-->
 
         <com.xuexiang.xui.widget.imageview.preview.view.SmoothImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:alpha="0.8"
             android:scaleType="centerInside"
             tools:src="@mipmap/sanxia"
-            android:visibility="visible"/>
+            android:visibility="visible"
+            android:gravity="center"/>
 
-
-
+        <VideoView
+            android:id="@+id/videoView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerInside"
+            android:visibility="gone"
+            android:gravity="center"/>
     </LinearLayout>
 
     <LinearLayout
@@ -174,7 +128,6 @@
             android:textAppearance="@android:style/TextAppearance.Material.Body2"
             android:textColor="#DADADA"
             android:textStyle="bold|italic"
-            android:visibility="visible"
-            tools:visibility="visible" />
+            android:visibility="visible" />
     </LinearLayout>
 </LinearLayout>

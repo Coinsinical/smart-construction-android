@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.media.ExifInterface;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
@@ -44,12 +46,16 @@ import androidx.core.content.FileProvider;
 import com.xuexiang.xui.XUI;
 import com.xuexiang.xui.widget.actionbar.TitleBar;
 import com.xuexiang.xui.widget.button.switchbutton.SwitchButton;
+import com.xuexiang.xui.widget.imageview.preview.view.SmoothImageView;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,22 +67,26 @@ import java.util.Set;
 
 public class DetectionActivity extends AppCompatActivity
 {
-    private static final int SELECT_IMAGE = 1;
+    private static final int SELECT_MEDIA = 1;
     public static final int TAKE_PHOTO = 2;
 
     private int current_model = 0;
     private int current_cpugpu = 0;
 
+    private int threadStop = 0;
+
+    private String mediaType = null;
+
     private int option = 0;
-//    private int secondOption = 0;
 
-//    ArrayAdapter<String>  modelAdapter;
-//    ArrayAdapter<String>  secondModelAdapter;
-
-    private Uri imageUri;
+    private Uri mediaUri;
 
     private ImageView imageView;
+    private ImageView videoFrameView;
+    private
+     VideoView videoView;
     private Bitmap bitmap = null;
+    private List<Bitmap> detectedBitmaps = new ArrayList<>();
     private Bitmap yourSelectedImage = null;
 
     private YoloV5Ncnn yolov5ncnn = new YoloV5Ncnn();
@@ -95,6 +105,7 @@ public class DetectionActivity extends AppCompatActivity
         titleBar.setLeftClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                threadStop = 0;
                 finish();
             }
         });
@@ -113,135 +124,28 @@ public class DetectionActivity extends AppCompatActivity
         titleBar.setTitle(titles[option]);
         reload();
 
-//        textContent = (TextView) findViewById(R.id.textContent);
-//        textContent.setText(R.string.construction_introduction);
-
-
-
-//        Spinner spinnerModel = (Spinner) findViewById(R.id.spinnerModel);
-//        Spinner spinnerSecondModel = (Spinner) findViewById(R.id.spinnerSecondModel);
-//        String[] modellist = new String[] {"质量监测","管道监测"};
-//        String[] qualityList = new String[] {"安全隐患","石块识别"};
-//        String[] pipeList = new String[] {"管道缺陷"};
-
-//        modelAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,  modellist);
-//        spinnerModel.setAdapter(modelAdapter);
-//        spinnerModel.setSelection(0,true);//设置初始默认值
-//        //绑定适配器和值
-//        secondModelAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, qualityList);
-//        spinnerSecondModel.setAdapter(secondModelAdapter);
-//        spinnerSecondModel.setSelection(0,true);//设置初始默认值
-//
-//
-//        spinnerModel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id)
-//            {
-//                if (position != option)
-//                {
-//                    System.out.println("model changed");
-//                    // 两个选项调用相同的模型
-//                    if (position == 0){
-//                        current_model = 0;
-//                    } else if (position == 1) {
-//                        current_model = 1;
-//                    }
-//                    option = position;
-//                    /*
-//                     一个选项对应一个模型
-//                     current_model = position;
-//                    */
-//                    if(position == 0){
-//                        secondModelAdapter = new ArrayAdapter<String>(DetectionActivity.this,android.R.layout.simple_spinner_item,qualityList);
-//                        spinnerSecondModel.setAdapter(secondModelAdapter);
-//                    }else if (position == 1){
-//                        secondModelAdapter = new ArrayAdapter<String>(DetectionActivity.this,android.R.layout.simple_spinner_item, pipeList);
-//                        spinnerSecondModel.setAdapter(secondModelAdapter);
-//                    }
-//                    reload();
-//
-//                    if (position == 0){
-//                        textContent.setText(R.string.construction_introduction);
-//                    } else if (position == 1 ) {
-//                        textContent.setText(R.string.pipe_introduction);
-//                    }
-//                    String inform = new String("模型切换成功");
-//                    Toast toast=Toast.makeText(getApplicationContext(), inform.toString(),
-//                            Toast.LENGTH_SHORT);
-//                    // toast.setGravity(Gravity.CENTER,0,0);
-//                    LinearLayout linearLayout = (LinearLayout) toast.getView();
-//                    TextView messageTextView = (TextView) linearLayout.getChildAt(0);
-//                    messageTextView.setTextSize(15);
-//                    toast.show();
-//                }
-//            }
-//
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> arg0)
-//            {
-//            }
-//        });
-//
-//        spinnerSecondModel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-//            @Override
-//            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-//                //获取列表项的值
-//                String category = adapterView.getItemAtPosition(position).toString();
-//                System.out.println(category);
-//                switch (category) {
-//                    case "安全隐患":
-//                        secondOption = 0;
-//                        break;
-//                    case "石块识别":
-//                        secondOption = 1;
-//                        break;
-//                    case "管道缺陷":
-//                        secondOption = 2;
-//                        break;
-//                }
-//            }
-//            @Override
-//            public void onNothingSelected(AdapterView<?> adapterView) {
-//            }
-//        });
-
-//        Spinner spinnerCPUGPU = (Spinner) findViewById(R.id.spinnerCPUGPU);
-//        spinnerCPUGPU.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id)
-//            {
-//                if (position != current_cpugpu)
-//                {
-//                    current_cpugpu = position;
-//                    // reload();
-//                    String inform = new String("模式切换成功");
-//                    Toast toast=Toast.makeText(getApplicationContext(), inform.toString(),
-//                            Toast.LENGTH_SHORT);
-//                    // toast.setGravity(Gravity.CENTER,0,0);
-//                    LinearLayout linearLayout = (LinearLayout) toast.getView();
-//                    TextView messageTextView = (TextView) linearLayout.getChildAt(0);
-//                    messageTextView.setTextSize(15);
-//                    toast.show();
-//                }
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> arg0)
-//            {
-//            }
-//        });
-
         imageView = (ImageView) findViewById(R.id.imageView);
+        videoView = (VideoView) findViewById(R.id.videoView);
 
-        Button buttonImage = (Button) findViewById(R.id.buttonImage);
-        buttonImage.setOnClickListener(new View.OnClickListener() {
+        Button buttonMedia = (Button) findViewById(R.id.buttonImage);
+        buttonMedia.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                System.out.println("select button is pressed");
-                Intent i = new Intent(Intent.ACTION_PICK);
-                i.setType("image/*");
-                startActivityForResult(i, SELECT_IMAGE);
+                threadStop = 0;
+                // 创建选择图片的Intent
+                Intent photoIntent = new Intent(Intent.ACTION_PICK);
+                photoIntent.setType("image/*");
+
+                // 创建选择视频的Intent
+                Intent videoIntent = new Intent(Intent.ACTION_PICK);
+                videoIntent.setType("video/*");
+
+                // 创建选择器Intent，用于同时选择图片和视频
+                Intent chooserIntent = Intent.createChooser(photoIntent, "Select Media");
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { videoIntent });
+
+                // 启动选择器并传递请求码
+                startActivityForResult(chooserIntent, SELECT_MEDIA);
             }
         });
 
@@ -250,6 +154,7 @@ public class DetectionActivity extends AppCompatActivity
         buttonShot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                threadStop = 0;
                 //创建File对象，用来存储拍照后的照片
                 //getExternalCacheDir()获取此应用缓存数据的位置，在这个位置保存图片
                 File outputImage=new File(getExternalCacheDir(),"output_image.jpg");
@@ -263,57 +168,113 @@ public class DetectionActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 if (Build.VERSION.SDK_INT>=24){
-                    imageUri= FileProvider.getUriForFile(DetectionActivity.this,
+                    mediaUri= FileProvider.getUriForFile(DetectionActivity.this,
                             "com.hhu.smartdetection.fileprovider",outputImage);
                 }else{
-                    imageUri=Uri.fromFile(outputImage);
+                    mediaUri=Uri.fromFile(outputImage);
                 }
                 //启动相机
                 Intent intent=new Intent("android.media.action.IMAGE_CAPTURE");
-                intent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT,mediaUri);
                 startActivityForResult(intent,TAKE_PHOTO);
             }
         });
 
         Button buttonDetect = (Button) findViewById(R.id.buttonDetect);
         buttonDetect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                if (yourSelectedImage == null)
-                    return;
-
+            public void detect(){
                 YoloV5Ncnn.Obj[] objects = null;
-                // reload();
-
-                if (current_cpugpu == 0){
-                    System.out.println("start cpu");
-                    objects = yolov5ncnn.Detect(yourSelectedImage, current_model,false);
-                    System.out.println("end cpu");
+                if (current_cpugpu == 0) {
+                    objects = yolov5ncnn.Detect(yourSelectedImage, current_model, false);
                 } else if (current_cpugpu == 1) {
                     // System.out.println("start gpu");
-                    objects = yolov5ncnn.Detect(yourSelectedImage, current_model,true);
+                    objects = yolov5ncnn.Detect(yourSelectedImage, current_model, true);
                 }
                 showObjects(objects);
             }
-        });
 
-//        Button buttonDetectGPU = (Button) findViewById(R.id.buttonDetectGPU);
-//        buttonDetectGPU.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View arg0) {
-//                if (yourSelectedImage == null)
-//                    return;
-//                YoloV5Ncnn.Obj[] objects = yolov5ncnn.Detect(yourSelectedImage, true);
-//                showObjects(objects);
-//            }
-//        });
+            private void videoDetect() {
+                // 创建一个新的线程来执行耗时操作
+                Thread videoDetectThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 创建MediaMetadataRetriever对象
+                        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                        try {
+                            // 设置数据源为视频路径
+                            retriever.setDataSource(getApplicationContext(), mediaUri);
+
+                            // 获取视频时长（单位：毫秒）
+                            String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+                            // 获取视频帧率
+                            String frameRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE);
+
+                            // 将时长,帧率转换为整数
+                            int videoDuration = Integer.parseInt(duration);
+                            int videoFrameRate = (int) (Float.parseFloat(frameRate));
+
+                            // 定义每一帧的时间间隔（单位：毫秒）
+                            int frameInterval = 1000 / videoFrameRate; // 每秒获取一帧
+                            //int frameInterval = 40; // 每秒获取一帧
+
+                            // 遍历视频的每一帧
+                            for (int time = 0; time < videoDuration; time += frameInterval) {
+                                if (threadStop == 0)
+                                    break;
+                                // 获取当前时间的帧
+                                Bitmap frameBitmap = retriever.getFrameAtTime(time * 1000L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                                bitmap = processBitmap(frameBitmap);
+                                if (bitmap != null) {
+                                    yourSelectedImage = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                                }
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        detect();
+                                    }
+                                });
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            // 释放MediaMetadataRetriever对象
+                            retriever.release();
+                        }
+                    }
+                });
+
+                // 启动线程
+                videoDetectThread.start();
+            }
+            @Override
+            public void onClick(View arg0) {
+                threadStop = (threadStop == 1) ? 0 : 1;
+
+                if (mediaType == null)
+                        return;
+                if (mediaType.startsWith("video/")) {
+                    if (mediaUri == null)
+                        return;
+                    videoView.stopPlayback();
+                    videoView.setVisibility(View.GONE);
+                    imageView.setVisibility(View.VISIBLE);
+                    videoDetect();
+                } else if (mediaType.startsWith("image/")) {
+                    if (yourSelectedImage == null)
+                        return;
+                    videoView.setVisibility(View.GONE);
+                    imageView.setVisibility(View.VISIBLE);
+                    detect();
+                }
+            }
+        });
 
         SwitchButton buttonMode = (SwitchButton) findViewById(R.id.buttonMode);
         buttonMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 if (buttonMode.isChecked()) {
-                    Log.i("MODE","GPU");
                     current_cpugpu = 1;
                 }
                 else
@@ -566,12 +527,17 @@ public class DetectionActivity extends AppCompatActivity
             }
         }
 
-        imageView.setImageBitmap(rgba);
-        List<String> messages = new ArrayList<>();
-        messages.add(inform.toString());
-        messages.add(rationale.toString());
-        showCustomDialog(messages);
-        // toast.setGravity(Gravity.CENTER,0,0);
+
+        if (mediaType.startsWith("image/")) {
+            imageView.setImageBitmap(rgba);
+            List<String> messages = new ArrayList<>();
+            messages.add(inform.toString());
+            messages.add(rationale.toString());
+            showCustomDialog(messages);
+            // toast.setGravity(Gravity.CENTER,0,0);
+        }
+        else if (mediaType.startsWith("video/"))
+            detectedBitmaps.add(rgba);
     }
 
     @Override
@@ -584,19 +550,31 @@ public class DetectionActivity extends AppCompatActivity
                 layout.setBackground(null);
                 switch (requestCode) {
                     case TAKE_PHOTO:
-                        bitmap = decodeUri(imageUri);
+                        bitmap = decodeUri(mediaUri);
                         // System.out.println("show photo");
                         yourSelectedImage = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                         imageView.setImageBitmap(bitmap);
                         break;
-                    case SELECT_IMAGE:
+                    case SELECT_MEDIA:
                         // System.out.println("show images");
-                        if (null != data) {
-                            Uri selectedImage = data.getData();
-                            bitmap = decodeUri(selectedImage);
-                            yourSelectedImage = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-                            imageView.setImageBitmap(bitmap);
-                        }
+                       if (null != data) {
+                           mediaUri = data.getData();
+                           if (mediaUri != null) {
+                               mediaType = getContentResolver().getType(mediaUri);
+                           }
+                           if (mediaType != null && mediaType.startsWith("image/")) {
+                               imageView.setVisibility(View.VISIBLE);
+                               videoView.setVisibility(View.GONE);
+                               bitmap = decodeUri(mediaUri);
+                               yourSelectedImage = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                               imageView.setImageBitmap(bitmap);
+                           } else if (mediaType != null && mediaType.startsWith("video/")) {
+                               imageView.setVisibility(View.GONE);
+                               videoView.setVisibility(View.VISIBLE);
+                               videoView.setVideoURI(mediaUri);
+                               // videoView.start();
+                           }
+                       }
                         break;
                     default:
                         break;
@@ -607,6 +585,68 @@ public class DetectionActivity extends AppCompatActivity
             return;
         }
     }
+
+    private Bitmap processBitmap(Bitmap bitmap) {
+        try {
+            // Rotate according to EXIF
+            int rotate = 0;
+            try {
+                // Assuming the bitmap is obtained from a camera or saved with EXIF orientation information
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                InputStream inputStream = new ByteArrayInputStream(stream.toByteArray());
+                ExifInterface exif = new ExifInterface(inputStream);
+                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        rotate = 270;
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        rotate = 180;
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        rotate = 90;
+                        break;
+                }
+            } catch (IOException e) {
+                Log.e("MainActivity", "ExifInterface IOException");
+            }
+
+            // Scale bitmap
+            // The new size we want to scale to
+            final int REQUIRED_SIZE = 640;
+
+            // Find the correct scale value. It should be the power of 2.
+            int width_tmp = bitmap.getWidth(), height_tmp = bitmap.getHeight();
+            int scale = 1;
+            while (width_tmp / 2 >= REQUIRED_SIZE
+                    && height_tmp / 2 >= REQUIRED_SIZE) {
+                width_tmp /= 2;
+                height_tmp /= 2;
+                scale *= 2;
+            }
+            Matrix matrix = new Matrix();
+            matrix.postScale(scale, scale);
+
+            // Apply rotation
+            matrix.postRotate(rotate);
+
+            // Apply matrix
+            Bitmap scaledBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+            // Reduce image quality
+            ByteArrayOutputStream qualityStream = new ByteArrayOutputStream();
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 10, qualityStream);
+            byte[] qualityBytes = qualityStream.toByteArray();
+            Bitmap reducedQualityBitmap = BitmapFactory.decodeByteArray(qualityBytes, 0, qualityBytes.length);
+
+            return reducedQualityBitmap;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     private Bitmap decodeUri(Uri selectedImage) throws FileNotFoundException
     {
@@ -621,11 +661,8 @@ public class DetectionActivity extends AppCompatActivity
         // Find the correct scale value. It should be the power of 2.
         int width_tmp = o.outWidth, height_tmp = o.outHeight;
         int scale = 1;
-        while (true) {
-            if (width_tmp / 2 < REQUIRED_SIZE
-                    || height_tmp / 2 < REQUIRED_SIZE) {
-                break;
-            }
+        while (width_tmp / 2 >= REQUIRED_SIZE
+                && height_tmp / 2 >= REQUIRED_SIZE) {
             width_tmp /= 2;
             height_tmp /= 2;
             scale *= 2;
